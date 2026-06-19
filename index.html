@@ -1,49 +1,114 @@
 <!DOCTYPE html>
 <html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OpoLab</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+}
+
+header {
+  background: #1e293b;
+  padding: 20px;
+  text-align: center;
+}
+
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin: 5px;
+}
+
+button {
+  background: #38bdf8;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #0ea5e9;
+}
+
+.small {
+  font-size: 14px;
+  opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
 <header>
   <h1>OpoLab</h1>
-  <p>Plataforma de entrenamiento para oposiciones </p>
+  <p>Plataforma de entrenamiento para oposiciones</p>
 </header>
 
 <div class="container">
 
+  <!-- BIENVENIDA -->
   <div class="card">
     <h2>Bienvenido/a</h2>
-    <p>OpoLab es la plataforma diseñada para ayudarte en tu preparación física de cara a las pruebas de tu oposición. En OpoLab encontrarás un espacio para cubrir tu propio perfil y seguir tu progreso.</p>
+    <p>
+      OpoLab es la plataforma diseñada para ayudarte en tu preparación física de cara a las pruebas de oposición. 
+      Aquí podrás crear tu perfil, registrar tus marcas y seguir tu evolución.
+    </p>
   </div>
-<div class="container">
 
-<!-- SELECCIÓN DE OPOSICIÓN -->
-<div class="card">
-  <h2>Elige tu oposición</h2>
+  <!-- OPOSICIÓN -->
+  <div class="card">
+    <h2>Elige tu oposición</h2>
 
-  <select id="oposicion" onchange="cargarPruebas()">
-    <option value="">Seleccionar</option>
-    <option value="local">Policía Local (Galicia)</option>
-    <option value="nacional">Policía Nacional</option>
-    <option value="bombero">Bomberos</option>
-  </select>
+    <select id="oposicion" onchange="cargarPruebas()">
+      <option value="">Seleccionar</option>
+      <option value="local">Policía Local (Galicia)</option>
+      <option value="nacional">Policía Nacional</option>
+      <option value="bombero">Bomberos</option>
+    </select>
 
-  <p class="small">Selecciona tu oposición para ver las pruebas físicas correspondientes</p>
-</div>
+    <p class="small">Selecciona tu oposición para ver las pruebas físicas</p>
+  </div>
 
-<!-- PERFIL -->
-<div class="card">
-  <h2>Perfil</h2>
+  <!-- PERFIL -->
+  <div class="card">
+    <h2>Perfil</h2>
 
-  <input id="nombre" placeholder="Nombre">
-  <input id="edad" type="number" placeholder="Edad">
-  <input id="peso" type="number" placeholder="Peso (kg)">
-  <input id="altura" type="number" placeholder="Altura (cm)">
+    <input id="nombre" placeholder="Nombre">
+    <input id="edad" type="number" placeholder="Edad">
+    <input id="peso" type="number" placeholder="Peso (kg)">
+    <input id="altura" type="number" placeholder="Altura (cm)">
 
-  <p id="perfilInfo"></p>
-</div>
+    <p id="perfilInfo"></p>
+  </div>
 
-<!-- PRUEBAS -->
-<div class="card" id="tests">
-  <h2>Pruebas físicas</h2>
-  <p>Selecciona una oposición para ver las pruebas</p>
-</div>
+  <!-- PRUEBAS -->
+  <div class="card" id="tests">
+    <h2>Pruebas físicas</h2>
+    <p>Selecciona una oposición para ver las pruebas</p>
+  </div>
 
 </div>
 
@@ -61,7 +126,7 @@ function guardarPerfil(){
     nombre: document.getElementById("nombre").value,
     edad: document.getElementById("edad").value,
     peso: document.getElementById("peso").value,
-    altura: document.getElementById("altura").value,
+    altura: document.getElementById("altura").value
   };
 
   document.getElementById("perfilInfo").innerText =
@@ -88,14 +153,12 @@ function cargarPruebas(){
   document.getElementById("tests").innerHTML = html;
 }
 
-/* =========================
-   POLICÍA LOCAL
-========================= */
+/* POLICÍA LOCAL */
 function crearLocal(){
   return `
   <h2>Policía Local - Galicia</h2>
 
-  <p>1000m (segundos)</p>
+  <p>1000m (tiempo)</p>
   <input id="l_min" type="number" placeholder="min">
   <input id="l_sec" type="number" placeholder="seg">
   <br>
@@ -106,9 +169,7 @@ function crearLocal(){
 
 function evalLocal(){
   let total = (parseInt(l_min.value||0)*60) + parseInt(l_sec.value||0);
-
   let objetivo = 300;
-
   let diff = total - objetivo;
 
   document.getElementById("res_local").innerText =
@@ -117,14 +178,12 @@ function evalLocal(){
       : `NO APTO. Te faltan ${diff} segundos`;
 }
 
-/* =========================
-   POLICÍA NACIONAL
-========================= */
+/* POLICÍA NACIONAL */
 function crearNacional(){
   return `
   <h2>Policía Nacional</h2>
 
-  <p>Resistencia (1000m)</p>
+  <p>1000m (tiempo)</p>
   <input id="n_min" type="number" placeholder="min">
   <input id="n_sec" type="number" placeholder="seg">
   <br>
@@ -135,9 +194,7 @@ function crearNacional(){
 
 function evalNacional(){
   let total = (parseInt(n_min.value||0)*60) + parseInt(n_sec.value||0);
-
   let objetivo = 290;
-
   let diff = total - objetivo;
 
   document.getElementById("res_nacional").innerText =
@@ -146,14 +203,12 @@ function evalNacional(){
       : `NO APTO. Te faltan ${diff} segundos`;
 }
 
-/* =========================
-   BOMBEROS
-========================= */
+/* BOMBEROS */
 function crearBombero(){
   return `
   <h2>Bomberos</h2>
 
-  <p>Resistencia (1000m)</p>
+  <p>1000m (tiempo)</p>
   <input id="b_min" type="number" placeholder="min">
   <input id="b_sec" type="number" placeholder="seg">
   <br>
@@ -164,9 +219,7 @@ function crearBombero(){
 
 function evalBombero(){
   let total = (parseInt(b_min.value||0)*60) + parseInt(b_sec.value||0);
-
   let objetivo = 320;
-
   let diff = total - objetivo;
 
   document.getElementById("res_bombero").innerText =
