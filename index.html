@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OpoLab</title>
 
 <style>
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial;
+  margin: 0;
   background: #0f172a;
   color: white;
-  margin: 0;
 }
 
 header {
@@ -21,33 +21,31 @@ header {
 
 .container {
   max-width: 900px;
-  margin: 30px auto;
+  margin: auto;
   padding: 20px;
-  text-align: center;
 }
 
 .card {
   background: #1e293b;
   padding: 20px;
-  margin-bottom: 20px;
+  margin: 15px 0;
   border-radius: 12px;
 }
 
-input {
+input, select {
   padding: 10px;
   margin: 5px;
   border-radius: 8px;
   border: none;
-  width: 180px;
+  width: 160px;
 }
 
 button {
-  background: #38bdf8;
-  border: none;
   padding: 10px 15px;
   border-radius: 8px;
+  border: none;
+  background: #38bdf8;
   cursor: pointer;
-  font-weight: bold;
 }
 
 button:hover {
@@ -68,21 +66,17 @@ button:hover {
 <!-- LOGIN -->
 <div class="card" id="authCard">
   <h2>Acceso</h2>
-
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Contraseña">
-
   <br><br>
-
-  <button onclick="register()">Registrarse</button>
   <button onclick="login()">Entrar</button>
-
+  <button onclick="register()">Registrarse</button>
   <p id="authMsg"></p>
 </div>
 
 <!-- USER -->
 <div class="card" id="userCard" style="display:none;">
-  <h2>Sesión iniciada</h2>
+  <h2>Sesión activa</h2>
   <p id="userInfo"></p>
   <button onclick="logout()">Cerrar sesión</button>
 </div>
@@ -94,18 +88,34 @@ button:hover {
   <input id="nombre" placeholder="Nombre">
   <input id="edad" type="number" placeholder="Edad">
   <input id="sexo" placeholder="Sexo">
+  <input id="disponibilidad" placeholder="Días/semana">
+  <input id="experiencia" placeholder="Experiencia deportiva">
 
   <br><br>
 
   <button onclick="guardarPerfil()">Guardar perfil</button>
-
   <p id="perfilInfo"></p>
 </div>
 
-<!-- PRÓXIMAMENTE -->
+<!-- OPOSICIONES -->
 <div class="card">
-  <h2>Registro de resultados</h2>
-  <p>Próximamente</p>
+  <h2>Pruebas físicas</h2>
+
+  <select id="oposicion" onchange="cargarPruebas()">
+    <option value="">Seleccionar</option>
+    <option value="local">Policía Local</option>
+    <option value="nacional">Policía Nacional</option>
+    <option value="bombero">Bomberos</option>
+  </select>
+
+  <div id="tests"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="card">
+  <h2>Panel entrenador</h2>
+  <button onclick="cargarUsuarios()">Ver usuarios</button>
+  <div id="usuarios"></div>
 </div>
 
 </div>
@@ -117,7 +127,7 @@ button:hover {
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyAobv-tXwjp2Z9a4i9HsMvilAQCUN5fow0",
+  apiKey: "PEGA_AQUI_TU_API_KEY",
   authDomain: "opolab-d280b.firebaseapp.com",
   projectId: "opolab-d280b",
   storageBucket: "opolab-d280b.firebasestorage.app",
@@ -126,11 +136,11 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* LOGIN */
+/* ================= LOGIN ================= */
+
 function login(){
   auth.signInWithEmailAndPassword(email.value, password.value)
   .then(()=> authMsg.innerText="Login correcto")
@@ -147,48 +157,136 @@ function logout(){
   auth.signOut();
 }
 
-/* PERFIL */
+/* ================= PERFIL ================= */
+
 function guardarPerfil(){
 
   let user = auth.currentUser;
   if(!user){
-    alert("Inicia sesión primero");
+    alert("Inicia sesión");
     return;
   }
 
   db.collection("usuarios").doc(user.uid).set({
-    nombre: nombre.value,
-    edad: edad.value,
-    sexo: sexo.value
-  });
+    perfil: {
+      nombre: nombre.value,
+      edad: edad.value,
+      sexo: sexo.value,
+      disponibilidad: disponibilidad.value,
+      experiencia: experiencia.value
+    }
+  }, { merge:true });
 
   perfilInfo.innerText = "Perfil guardado";
 }
 
-/* SESIÓN */
+/* ================= SESIÓN ================= */
+
 auth.onAuthStateChanged(user => {
 
   if(user){
-    authCard.style.display = "none";
-    userCard.style.display = "block";
-    userInfo.innerText = user.email;
+    authCard.style.display="none";
+    userCard.style.display="block";
+    userInfo.innerText=user.email;
 
     db.collection("usuarios").doc(user.uid).get()
-    .then(doc => {
+    .then(doc=>{
       if(doc.exists){
-        let d = doc.data();
-        nombre.value = d.nombre || "";
-        edad.value = d.edad || "";
-        sexo.value = d.sexo || "";
+        let d=doc.data().perfil || {};
+        nombre.value=d.nombre||"";
+        edad.value=d.edad||"";
+        sexo.value=d.sexo||"";
+        disponibilidad.value=d.disponibilidad||"";
+        experiencia.value=d.experiencia||"";
       }
     });
 
   } else {
-    authCard.style.display = "block";
-    userCard.style.display = "none";
+    authCard.style.display="block";
+    userCard.style.display="none";
   }
 
 });
+
+/* ================= PRUEBAS ================= */
+
+function cargarPruebas(){
+
+  let op = oposicion.value;
+
+  let html="";
+
+  if(op==="local"){
+    html=`
+    <h3>Policía Local</h3>
+
+    <p>1000m (segundos)</p>
+    <input id="l1">
+
+    <p>Salto (cm)</p>
+    <input id="l2">
+
+    <p>Flexiones</p>
+    <input id="l3">
+
+    <p>Natación (seg)</p>
+    <input id="l4">
+
+    <br><button onclick="evalLocal()">Evaluar</button>
+    <p id="res"></p>
+    `;
+  }
+
+  if(op==="nacional"){
+    html=`<h3>Policía Nacional</h3><p>Pruebas variables según convocatoria</p>`;
+  }
+
+  if(op==="bombero"){
+    html=`<h3>Bomberos</h3><p>Pruebas variables según convocatoria</p>`;
+  }
+
+  tests.innerHTML=html;
+}
+
+function evalLocal(){
+
+  let errores=[];
+
+  if(parseInt(l1.value)>300) errores.push("1000m mal");
+  if(parseInt(l2.value)<200) errores.push("salto mal");
+  if(parseInt(l3.value)<20) errores.push("flexiones mal");
+  if(parseInt(l4.value)>25) errores.push("natación mal");
+
+  res.innerHTML = errores.length===0
+  ? "APTO"
+  : "NO APTO<br>"+errores.join("<br>");
+}
+
+/* ================= DASHBOARD ================= */
+
+function cargarUsuarios(){
+
+  db.collection("usuarios").get().then(snap=>{
+
+    let html="";
+
+    snap.forEach(doc=>{
+      let d=doc.data().perfil||{};
+
+      html+=`
+      <div style="background:#0f172a;padding:10px;margin:10px;border-radius:10px;">
+        <b>${d.nombre||"sin nombre"}</b><br>
+        ${d.edad||""} años<br>
+        ${d.sexo||""}<br>
+        ${d.disponibilidad||""}<br>
+        ${d.experiencia||""}
+      </div>`;
+    });
+
+    usuarios.innerHTML=html;
+  });
+}
+
 </script>
 
 </body>
