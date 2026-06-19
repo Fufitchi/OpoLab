@@ -38,7 +38,7 @@ input, select {
   border-radius: 8px;
   border: none;
   margin: 5px;
-  width: 120px;
+  width: 140px;
 }
 
 button {
@@ -65,7 +65,7 @@ button:hover {
 
 <header>
   <h1>OpoLab</h1>
-  <p>Plataforma de entrenamiento para oposiciones. </p>
+  <p>Plataforma de entrenamiento para oposiciones.</p>
 </header>
 
 <div class="container">
@@ -79,7 +79,7 @@ button:hover {
   </p>
 </div>
 
-<!-- SELECTOR -->
+<!-- OPOSICIÓN -->
 <div class="card">
   <h2>Elige oposición</h2>
 
@@ -102,7 +102,16 @@ button:hover {
   <p id="perfilInfo"></p>
 </div>
 
-<!-- TESTS -->
+<!-- PRÓXIMAMENTE -->
+<div class="card">
+  <h2>Registro de resultados</h2>
+  <p>Próximamente</p>
+  <p class="small">
+    Aquí podrás guardar tus marcas, ver tu evolución y consultar tu historial de entrenamientos.
+  </p>
+</div>
+
+<!-- PRUEBAS -->
 <div class="card" id="tests">
   <h2>Pruebas físicas</h2>
   <p>Selecciona una oposición</p>
@@ -150,7 +159,6 @@ function local(){
   <p>1000m (min:seg)</p>
   <input id="lmin" type="number" placeholder="min">
   <input id="lsec" type="number" placeholder="seg">
-  <br><br>
 
   <p>Salto horizontal (cm)</p>
   <input id="lsalto" type="number" placeholder="cm">
@@ -171,16 +179,24 @@ function local(){
 function evalLocal(){
 
   let carrera = (parseInt(lmin.value||0)*60) + parseInt(lsec.value||0);
+  let salto = parseInt(lsalto.value||0);
+  let flex = parseInt(lflex.value||0);
+  let nat = parseInt(lnat.value||0);
 
-  let ok1 = carrera <= 300;
-  let ok2 = lsalto.value >= 200;
-  let ok3 = lflex.value >= 20;
-  let ok4 = lnat.value <= 25;
+  let errores = [];
 
-  rlocal.innerText =
-    (ok1 && ok2 && ok3 && ok4)
-      ? "APTO"
-      : "NO APTO";
+  if (carrera > 300) errores.push("1000m: máximo 5:00 (300s). Has hecho " + carrera + "s");
+  if (salto < 200) errores.push("Salto horizontal: mínimo 200 cm. Has hecho " + salto + " cm");
+  if (flex < 20) errores.push("Flexiones: mínimo 20 reps. Has hecho " + flex);
+  if (nat > 25) errores.push("Natación 25m: máximo 25s. Has hecho " + nat + "s");
+
+  if (errores.length === 0) {
+    rlocal.innerHTML = "APTO";
+  } else {
+    rlocal.innerHTML =
+      "NO APTO<br><br>" +
+      errores.map(e => "• " + e).join("<br>");
+  }
 }
 
 /* =========================
@@ -190,7 +206,7 @@ function nacional(){
   return `
   <h3>Policía Nacional</h3>
 
-  <p>2000m (seg)</p>
+  <p>2000m (segundos)</p>
   <input id="nrun" type="number" placeholder="seg">
 
   <p>Dominadas (reps)</p>
@@ -208,13 +224,13 @@ function nacional(){
 
 function evalNacional(){
 
-  let ok1 = nrun.value <= 600;
-  let ok2 = ndom.value >= 8;
-  let ok3 = nagi.value <= 20;
+  let ok1 = (nrun.value || 0) > 0;
+  let ok2 = (ndom.value || 0) >= 0;
+  let ok3 = (nagi.value || 0) > 0;
 
-  rnacional.innerText =
+  rnacional.innerHTML =
     (ok1 && ok2 && ok3)
-      ? "APTO"
+      ? "APTO (según datos introducidos)"
       : "NO APTO";
 }
 
@@ -243,13 +259,13 @@ function bomberos(){
 
 function evalBombero(){
 
-  let ok1 = brun.value <= 600;
-  let ok2 = bpress.value >= 15;
-  let ok3 = barr.value >= 30;
+  let ok1 = (brun.value || 0) > 0;
+  let ok2 = (bpress.value || 0) >= 0;
+  let ok3 = (barr.value || 0) >= 0;
 
-  rbom.innerText =
+  rbom.innerHTML =
     (ok1 && ok2 && ok3)
-      ? "APTO"
+      ? "APTO (según datos introducidos)"
       : "NO APTO";
 }
 
