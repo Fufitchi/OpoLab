@@ -33,12 +33,12 @@ header {
   border-radius: 12px;
 }
 
-input, select {
+input {
   padding: 10px;
+  margin: 5px;
   border-radius: 8px;
   border: none;
-  margin: 5px;
-  width: 140px;
+  width: 180px;
 }
 
 button {
@@ -53,11 +53,6 @@ button {
 button:hover {
   background: #0ea5e9;
 }
-
-.small {
-  font-size: 13px;
-  opacity: 0.8;
-}
 </style>
 </head>
 
@@ -65,30 +60,31 @@ button:hover {
 
 <header>
   <h1>OpoLab</h1>
-  <p>Plataforma de entrenamiento para oposiciones.</p>
+  <p>Plataforma de entrenamiento para oposiciones físicas</p>
 </header>
 
 <div class="container">
 
-<!-- BIENVENIDA -->
-<div class="card">
-  <h2>Bienvenido/a</h2>
-  <p>
-    OpoLab es la plataforma diseñada para ayudarte en tu preparación física de cara a las pruebas de oposición.
-    Aquí podrás crear tu perfil, registrar tus marcas y seguir tu evolución.
-  </p>
+<!-- LOGIN -->
+<div class="card" id="authCard">
+  <h2>Acceso</h2>
+
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Contraseña">
+
+  <br><br>
+
+  <button onclick="register()">Registrarse</button>
+  <button onclick="login()">Entrar</button>
+
+  <p id="authMsg"></p>
 </div>
 
-<!-- OPOSICIÓN -->
-<div class="card">
-  <h2>Elige oposición</h2>
-
-  <select id="oposicion" onchange="cargar()">
-    <option value="">Seleccionar</option>
-    <option value="local">Policía Local (Galicia)</option>
-    <option value="nacional">Policía Nacional</option>
-    <option value="bombero">Bomberos</option>
-  </select>
+<!-- USER -->
+<div class="card" id="userCard" style="display:none;">
+  <h2>Sesión iniciada</h2>
+  <p id="userInfo"></p>
+  <button onclick="logout()">Cerrar sesión</button>
 </div>
 
 <!-- PERFIL -->
@@ -99,6 +95,10 @@ button:hover {
   <input id="edad" type="number" placeholder="Edad">
   <input id="sexo" placeholder="Sexo">
 
+  <br><br>
+
+  <button onclick="guardarPerfil()">Guardar perfil</button>
+
   <p id="perfilInfo"></p>
 </div>
 
@@ -106,169 +106,89 @@ button:hover {
 <div class="card">
   <h2>Registro de resultados</h2>
   <p>Próximamente</p>
-  <p class="small">
-    Aquí podrás guardar tus marcas, ver tu evolución y consultar tu historial de entrenamientos.
-  </p>
-</div>
-
-<!-- PRUEBAS -->
-<div class="card" id="tests">
-  <h2>Pruebas físicas</h2>
-  <p>Selecciona una oposición</p>
 </div>
 
 </div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAobv-tXwjp2Z9a4i9HsMvilAQCUN5fow0",
+  authDomain: "opolab-d280b.firebaseapp.com",
+  projectId: "opolab-d280b",
+  storageBucket: "opolab-d280b.firebasestorage.app",
+  messagingSenderId: "763421687343",
+  appId: "1:763421687343:web:0d1f88cd88afa067c350da"
+};
 
-let perfil = {};
+firebase.initializeApp(firebaseConfig);
 
-document.querySelectorAll("input").forEach(i=>{
-  i.addEventListener("input", guardarPerfil);
-});
+const auth = firebase.auth();
+const db = firebase.firestore();
 
+/* LOGIN */
+function login(){
+  auth.signInWithEmailAndPassword(email.value, password.value)
+  .then(()=> authMsg.innerText="Login correcto")
+  .catch(e=> authMsg.innerText=e.message);
+}
+
+function register(){
+  auth.createUserWithEmailAndPassword(email.value, password.value)
+  .then(()=> authMsg.innerText="Usuario creado")
+  .catch(e=> authMsg.innerText=e.message);
+}
+
+function logout(){
+  auth.signOut();
+}
+
+/* PERFIL */
 function guardarPerfil(){
-  perfil = {
+
+  let user = auth.currentUser;
+  if(!user){
+    alert("Inicia sesión primero");
+    return;
+  }
+
+  db.collection("usuarios").doc(user.uid).set({
     nombre: nombre.value,
     edad: edad.value,
     sexo: sexo.value
-  };
+  });
 
-  document.getElementById("perfilInfo").innerText =
-    `Perfil: ${perfil.nombre || "sin nombre"}`;
+  perfilInfo.innerText = "Perfil guardado";
 }
 
-function cargar(){
-  let op = oposicion.value;
-  let html = "";
+/* SESIÓN */
+auth.onAuthStateChanged(user => {
 
-  if(op === "local") html = local();
-  if(op === "nacional") html = nacional();
-  if(op === "bombero") html = bomberos();
+  if(user){
+    authCard.style.display = "none";
+    userCard.style.display = "block";
+    userInfo.innerText = user.email;
 
-  tests.innerHTML = html;
-}
+    db.collection("usuarios").doc(user.uid).get()
+    .then(doc => {
+      if(doc.exists){
+        let d = doc.data();
+        nombre.value = d.nombre || "";
+        edad.value = d.edad || "";
+        sexo.value = d.sexo || "";
+      }
+    });
 
-/* =========================
-   POLICÍA LOCAL
-========================= */
-function local(){
-  return `
-  <h3>Policía Local</h3>
-
-  <p>1000m (min:seg)</p>
-  <input id="lmin" type="number" placeholder="min">
-  <input id="lsec" type="number" placeholder="seg">
-
-  <p>Salto horizontal (cm)</p>
-  <input id="lsalto" type="number" placeholder="cm">
-
-  <p>Flexiones (reps)</p>
-  <input id="lflex" type="number" placeholder="reps">
-
-  <p>Natación 25m (seg)</p>
-  <input id="lnat" type="number" placeholder="seg">
-
-  <br><br>
-
-  <button onclick="evalLocal()">Evaluar</button>
-  <p id="rlocal"></p>
-  `;
-}
-
-function evalLocal(){
-
-  let carrera = (parseInt(lmin.value||0)*60) + parseInt(lsec.value||0);
-  let salto = parseInt(lsalto.value||0);
-  let flex = parseInt(lflex.value||0);
-  let nat = parseInt(lnat.value||0);
-
-  let errores = [];
-
-  if (carrera > 300) errores.push("1000m: máximo 5:00 (300s). Has hecho " + carrera + "s");
-  if (salto < 200) errores.push("Salto horizontal: mínimo 200 cm. Has hecho " + salto + " cm");
-  if (flex < 20) errores.push("Flexiones: mínimo 20 reps. Has hecho " + flex);
-  if (nat > 25) errores.push("Natación 25m: máximo 25s. Has hecho " + nat + "s");
-
-  if (errores.length === 0) {
-    rlocal.innerHTML = "APTO";
   } else {
-    rlocal.innerHTML =
-      "NO APTO<br><br>" +
-      errores.map(e => "• " + e).join("<br>");
+    authCard.style.display = "block";
+    userCard.style.display = "none";
   }
-}
 
-/* =========================
-   POLICÍA NACIONAL
-========================= */
-function nacional(){
-  return `
-  <h3>Policía Nacional</h3>
-
-  <p>2000m (segundos)</p>
-  <input id="nrun" type="number" placeholder="seg">
-
-  <p>Dominadas (reps)</p>
-  <input id="ndom" type="number" placeholder="reps">
-
-  <p>Circuito agilidad (seg)</p>
-  <input id="nagi" type="number" placeholder="seg">
-
-  <br><br>
-
-  <button onclick="evalNacional()">Evaluar</button>
-  <p id="rnacional"></p>
-  `;
-}
-
-function evalNacional(){
-
-  let ok1 = (nrun.value || 0) > 0;
-  let ok2 = (ndom.value || 0) >= 0;
-  let ok3 = (nagi.value || 0) > 0;
-
-  rnacional.innerHTML =
-    (ok1 && ok2 && ok3)
-      ? "APTO (según datos introducidos)"
-      : "NO APTO";
-}
-
-/* =========================
-   BOMBEROS
-========================= */
-function bomberos(){
-  return `
-  <h3>Bomberos</h3>
-
-  <p>Carrera (seg)</p>
-  <input id="brun" type="number" placeholder="seg">
-
-  <p>Press banca (reps)</p>
-  <input id="bpress" type="number" placeholder="reps">
-
-  <p>Arrastre peso (kg)</p>
-  <input id="barr" type="number" placeholder="kg">
-
-  <br><br>
-
-  <button onclick="evalBombero()">Evaluar</button>
-  <p id="rbom"></p>
-  `;
-}
-
-function evalBombero(){
-
-  let ok1 = (brun.value || 0) > 0;
-  let ok2 = (bpress.value || 0) >= 0;
-  let ok3 = (barr.value || 0) >= 0;
-
-  rbom.innerHTML =
-    (ok1 && ok2 && ok3)
-      ? "APTO (según datos introducidos)"
-      : "NO APTO";
-}
-
+});
 </script>
 
 </body>
