@@ -53,6 +53,11 @@ button {
 button:hover {
   background: #0ea5e9;
 }
+
+.small {
+  font-size: 13px;
+  opacity: 0.8;
+}
 </style>
 </head>
 
@@ -60,7 +65,7 @@ button:hover {
 
 <header>
   <h1>OpoLab</h1>
-  <p>Plataforma de entrenamiento para oposiciones físicas</p>
+  <p>Plataforma de entrenamiento para oposiciones. </p>
 </header>
 
 <div class="container">
@@ -142,26 +147,30 @@ function local(){
   return `
   <h3>Policía Local</h3>
 
-  <p>1000m</p>
+  <p>1000m (min:seg)</p>
   <input id="lmin" type="number" placeholder="min">
   <input id="lsec" type="number" placeholder="seg">
+  <br><br>
+
+  <p>Salto horizontal (cm)</p>
+  <input id="lsalto" type="number" placeholder="cm">
+
+  <p>Flexiones (reps)</p>
+  <input id="lflex" type="number" placeholder="reps">
+
+  <p>Natación 25m (seg)</p>
+  <input id="lnat" type="number" placeholder="seg">
+
+  <br><br>
+
   <button onclick="evalLocal()">Evaluar</button>
-
-  <p>Salto horizontal</p>
-  <input id="lsalto" type="number">
-
-  <p>Flexiones</p>
-  <input id="lflex" type="number">
-
-  <p>Natación 25m</p>
-  <input id="lnat" type="number">
-
   <p id="rlocal"></p>
   `;
 }
 
 function evalLocal(){
-  let carrera = (lmin.value*60) + +lsec.value;
+
+  let carrera = (parseInt(lmin.value||0)*60) + parseInt(lsec.value||0);
 
   let ok1 = carrera <= 300;
   let ok2 = lsalto.value >= 200;
@@ -169,7 +178,9 @@ function evalLocal(){
   let ok4 = lnat.value <= 25;
 
   rlocal.innerText =
-    (ok1 && ok2 && ok3 && ok4) ? "APTO" : "NO APTO";
+    (ok1 && ok2 && ok3 && ok4)
+      ? "APTO"
+      : "NO APTO";
 }
 
 /* =========================
@@ -179,26 +190,32 @@ function nacional(){
   return `
   <h3>Policía Nacional</h3>
 
-  <p>2000m</p>
-  <input id="nrun" type="number">
+  <p>2000m (seg)</p>
+  <input id="nrun" type="number" placeholder="seg">
 
-  <p>Dominadas</p>
-  <input id="ndom" type="number">
+  <p>Dominadas (reps)</p>
+  <input id="ndom" type="number" placeholder="reps">
 
-  <p>Circuito agilidad</p>
-  <input id="nagi" type="number">
+  <p>Circuito agilidad (seg)</p>
+  <input id="nagi" type="number" placeholder="seg">
 
+  <br><br>
+
+  <button onclick="evalNacional()">Evaluar</button>
   <p id="rnacional"></p>
   `;
 }
 
 function evalNacional(){
+
   let ok1 = nrun.value <= 600;
   let ok2 = ndom.value >= 8;
   let ok3 = nagi.value <= 20;
 
   rnacional.innerText =
-    (ok1 && ok2 && ok3) ? "APTO" : "NO APTO";
+    (ok1 && ok2 && ok3)
+      ? "APTO"
+      : "NO APTO";
 }
 
 /* =========================
@@ -208,26 +225,32 @@ function bomberos(){
   return `
   <h3>Bomberos</h3>
 
-  <p>Carrera</p>
-  <input id="brun" type="number">
+  <p>Carrera (seg)</p>
+  <input id="brun" type="number" placeholder="seg">
 
-  <p>Press banca</p>
-  <input id="bpress" type="number">
+  <p>Press banca (reps)</p>
+  <input id="bpress" type="number" placeholder="reps">
 
-  <p>Arrastre peso</p>
-  <input id="barr" type="number">
+  <p>Arrastre peso (kg)</p>
+  <input id="barr" type="number" placeholder="kg">
 
+  <br><br>
+
+  <button onclick="evalBombero()">Evaluar</button>
   <p id="rbom"></p>
   `;
 }
 
 function evalBombero(){
+
   let ok1 = brun.value <= 600;
   let ok2 = bpress.value >= 15;
   let ok3 = barr.value >= 30;
 
   rbom.innerText =
-    (ok1 && ok2 && ok3) ? "APTO" : "NO APTO";
+    (ok1 && ok2 && ok3)
+      ? "APTO"
+      : "NO APTO";
 }
 
 </script>
