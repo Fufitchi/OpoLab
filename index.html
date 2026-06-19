@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>OpoLab</title>
 
@@ -38,6 +38,7 @@ input, select {
   border-radius: 8px;
   border: none;
   margin: 5px;
+  width: 120px;
 }
 
 button {
@@ -52,11 +53,6 @@ button {
 button:hover {
   background: #0ea5e9;
 }
-
-.small {
-  font-size: 14px;
-  opacity: 0.8;
-}
 </style>
 </head>
 
@@ -64,168 +60,174 @@ button:hover {
 
 <header>
   <h1>OpoLab</h1>
-  <p>Plataforma de entrenamiento para oposiciones</p>
+  <p>Plataforma de entrenamiento para oposiciones físicas</p>
 </header>
 
 <div class="container">
 
-  <!-- BIENVENIDA -->
-  <div class="card">
-    <h2>Bienvenido/a</h2>
-    <p>
-      OpoLab es la plataforma diseñada para ayudarte en tu preparación física de cara a las pruebas de oposición. 
-      Aquí podrás crear tu perfil, registrar tus marcas y seguir tu evolución.
-    </p>
-  </div>
+<!-- BIENVENIDA -->
+<div class="card">
+  <h2>Bienvenido/a</h2>
+  <p>
+    OpoLab es la plataforma diseñada para ayudarte en tu preparación física de cara a las pruebas de oposición.
+    Aquí podrás crear tu perfil, registrar tus marcas y seguir tu evolución.
+  </p>
+</div>
 
-  <!-- OPOSICIÓN -->
-  <div class="card">
-    <h2>Elige tu oposición</h2>
+<!-- SELECTOR -->
+<div class="card">
+  <h2>Elige oposición</h2>
 
-    <select id="oposicion" onchange="cargarPruebas()">
-      <option value="">Seleccionar</option>
-      <option value="local">Policía Local (Galicia)</option>
-      <option value="nacional">Policía Nacional</option>
-      <option value="bombero">Bomberos</option>
-    </select>
+  <select id="oposicion" onchange="cargar()">
+    <option value="">Seleccionar</option>
+    <option value="local">Policía Local (Galicia)</option>
+    <option value="nacional">Policía Nacional</option>
+    <option value="bombero">Bomberos</option>
+  </select>
+</div>
 
-    <p class="small">Selecciona tu oposición para ver las pruebas físicas</p>
-  </div>
+<!-- PERFIL -->
+<div class="card">
+  <h2>Perfil</h2>
 
-  <!-- PERFIL -->
-  <div class="card">
-    <h2>Perfil</h2>
+  <input id="nombre" placeholder="Nombre">
+  <input id="edad" type="number" placeholder="Edad">
+  <input id="sexo" placeholder="Sexo">
 
-    <input id="nombre" placeholder="Nombre">
-    <input id="edad" type="number" placeholder="Edad">
-    <input id="peso" type="number" placeholder="Peso (kg)">
-    <input id="altura" type="number" placeholder="Altura (cm)">
+  <p id="perfilInfo"></p>
+</div>
 
-    <p id="perfilInfo"></p>
-  </div>
-
-  <!-- PRUEBAS -->
-  <div class="card" id="tests">
-    <h2>Pruebas físicas</h2>
-    <p>Selecciona una oposición para ver las pruebas</p>
-  </div>
+<!-- TESTS -->
+<div class="card" id="tests">
+  <h2>Pruebas físicas</h2>
+  <p>Selecciona una oposición</p>
+</div>
 
 </div>
 
 <script>
 
 let perfil = {};
-let oposicionActual = "";
 
-document.querySelectorAll("input").forEach(el=>{
-  el.addEventListener("input", guardarPerfil);
+document.querySelectorAll("input").forEach(i=>{
+  i.addEventListener("input", guardarPerfil);
 });
 
 function guardarPerfil(){
   perfil = {
-    nombre: document.getElementById("nombre").value,
-    edad: document.getElementById("edad").value,
-    peso: document.getElementById("peso").value,
-    altura: document.getElementById("altura").value
+    nombre: nombre.value,
+    edad: edad.value,
+    sexo: sexo.value
   };
 
   document.getElementById("perfilInfo").innerText =
     `Perfil: ${perfil.nombre || "sin nombre"}`;
 }
 
-function cargarPruebas(){
-  oposicionActual = document.getElementById("oposicion").value;
-
+function cargar(){
+  let op = oposicion.value;
   let html = "";
 
-  if(oposicionActual === "local"){
-    html = crearLocal();
-  }
+  if(op === "local") html = local();
+  if(op === "nacional") html = nacional();
+  if(op === "bombero") html = bomberos();
 
-  if(oposicionActual === "nacional"){
-    html = crearNacional();
-  }
-
-  if(oposicionActual === "bombero"){
-    html = crearBombero();
-  }
-
-  document.getElementById("tests").innerHTML = html;
+  tests.innerHTML = html;
 }
 
-/* POLICÍA LOCAL */
-function crearLocal(){
+/* =========================
+   POLICÍA LOCAL
+========================= */
+function local(){
   return `
-  <h2>Policía Local - Galicia</h2>
+  <h3>Policía Local</h3>
 
-  <p>1000m (tiempo)</p>
-  <input id="l_min" type="number" placeholder="min">
-  <input id="l_sec" type="number" placeholder="seg">
-  <br>
+  <p>1000m</p>
+  <input id="lmin" type="number" placeholder="min">
+  <input id="lsec" type="number" placeholder="seg">
   <button onclick="evalLocal()">Evaluar</button>
-  <p id="res_local"></p>
+
+  <p>Salto horizontal</p>
+  <input id="lsalto" type="number">
+
+  <p>Flexiones</p>
+  <input id="lflex" type="number">
+
+  <p>Natación 25m</p>
+  <input id="lnat" type="number">
+
+  <p id="rlocal"></p>
   `;
 }
 
 function evalLocal(){
-  let total = (parseInt(l_min.value||0)*60) + parseInt(l_sec.value||0);
-  let objetivo = 300;
-  let diff = total - objetivo;
+  let carrera = (lmin.value*60) + +lsec.value;
 
-  document.getElementById("res_local").innerText =
-    diff <= 0
-      ? "APTO"
-      : `NO APTO. Te faltan ${diff} segundos`;
+  let ok1 = carrera <= 300;
+  let ok2 = lsalto.value >= 200;
+  let ok3 = lflex.value >= 20;
+  let ok4 = lnat.value <= 25;
+
+  rlocal.innerText =
+    (ok1 && ok2 && ok3 && ok4) ? "APTO" : "NO APTO";
 }
 
-/* POLICÍA NACIONAL */
-function crearNacional(){
+/* =========================
+   POLICÍA NACIONAL
+========================= */
+function nacional(){
   return `
-  <h2>Policía Nacional</h2>
+  <h3>Policía Nacional</h3>
 
-  <p>1000m (tiempo)</p>
-  <input id="n_min" type="number" placeholder="min">
-  <input id="n_sec" type="number" placeholder="seg">
-  <br>
-  <button onclick="evalNacional()">Evaluar</button>
-  <p id="res_nacional"></p>
+  <p>2000m</p>
+  <input id="nrun" type="number">
+
+  <p>Dominadas</p>
+  <input id="ndom" type="number">
+
+  <p>Circuito agilidad</p>
+  <input id="nagi" type="number">
+
+  <p id="rnacional"></p>
   `;
 }
 
 function evalNacional(){
-  let total = (parseInt(n_min.value||0)*60) + parseInt(n_sec.value||0);
-  let objetivo = 290;
-  let diff = total - objetivo;
+  let ok1 = nrun.value <= 600;
+  let ok2 = ndom.value >= 8;
+  let ok3 = nagi.value <= 20;
 
-  document.getElementById("res_nacional").innerText =
-    diff <= 0
-      ? "APTO"
-      : `NO APTO. Te faltan ${diff} segundos`;
+  rnacional.innerText =
+    (ok1 && ok2 && ok3) ? "APTO" : "NO APTO";
 }
 
-/* BOMBEROS */
-function crearBombero(){
+/* =========================
+   BOMBEROS
+========================= */
+function bomberos(){
   return `
-  <h2>Bomberos</h2>
+  <h3>Bomberos</h3>
 
-  <p>1000m (tiempo)</p>
-  <input id="b_min" type="number" placeholder="min">
-  <input id="b_sec" type="number" placeholder="seg">
-  <br>
-  <button onclick="evalBombero()">Evaluar</button>
-  <p id="res_bombero"></p>
+  <p>Carrera</p>
+  <input id="brun" type="number">
+
+  <p>Press banca</p>
+  <input id="bpress" type="number">
+
+  <p>Arrastre peso</p>
+  <input id="barr" type="number">
+
+  <p id="rbom"></p>
   `;
 }
 
 function evalBombero(){
-  let total = (parseInt(b_min.value||0)*60) + parseInt(b_sec.value||0);
-  let objetivo = 320;
-  let diff = total - objetivo;
+  let ok1 = brun.value <= 600;
+  let ok2 = bpress.value >= 15;
+  let ok3 = barr.value >= 30;
 
-  document.getElementById("res_bombero").innerText =
-    diff <= 0
-      ? "APTO"
-      : `NO APTO. Te faltan ${diff} segundos`;
+  rbom.innerText =
+    (ok1 && ok2 && ok3) ? "APTO" : "NO APTO";
 }
 
 </script>
